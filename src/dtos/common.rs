@@ -1,4 +1,5 @@
 use crate::dtos::auth::TokenResponse;
+use crate::models::user::UserProfile;
 use serde::Serialize;
 use serde_json::json;
 use utoipa::ToSchema;
@@ -75,4 +76,19 @@ pub struct ApiResponseEmptyEnvelope {
     pub message: String,
     /// Empty object
     pub data: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct ApiResponseUserProfileEnvelope {
+    /// Status response
+    #[schema(example = "success")]
+    pub status: String,
+    /// HTTP status code
+    #[schema(example = 200)]
+    pub code: u16,
+    /// Message detail
+    #[schema(example = "OK")]
+    pub message: String,
+    /// User profile payload
+    pub data: UserProfile,
 }

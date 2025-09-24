@@ -28,7 +28,7 @@ pub struct NewUser {
     pub password: String,
 }
 
-#[derive(Serialize, ToSchema)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct UserProfile {
     #[schema(example = "550e8400-e29b-41d4-a716-446655440000")]
     pub id: Uuid,
