@@ -1,5 +1,5 @@
 [package]
-name = "my_first_backend"
+name = "rust-axum-pg-boilerplate"
 version = "0.1.0"
 edition = "2021"
 
