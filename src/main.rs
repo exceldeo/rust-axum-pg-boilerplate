@@ -38,6 +38,7 @@ mod utils;
             crate::dtos::common::ApiResponse,
             crate::dtos::common::ApiResponseTokenEnvelope,
             crate::dtos::common::ApiResponseEmptyEnvelope,
+            crate::dtos::common::ApiResponseUserProfileEnvelope,
         )
     ),
     tags(

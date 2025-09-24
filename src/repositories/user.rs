@@ -12,7 +12,13 @@ pub async fn insert_user(
         r#"
         INSERT INTO users (username, email, password_hash)
         VALUES ($1, $2, $3)
-        RETURNING id, username, email, password_hash, created_at, updated_at
+        RETURNING 
+            id, 
+            username, 
+            email, 
+            password_hash, 
+            EXTRACT(EPOCH FROM created_at) as "created_at!: i64",
+            EXTRACT(EPOCH FROM updated_at) as "updated_at!: i64"
         "#,
         new_user.username,
         new_user.email,
@@ -30,7 +36,16 @@ pub async fn find_user_by_email(
 ) -> Result<Option<User>, sqlx::Error> {
     let user = sqlx::query_as!(
         User,
-        "SELECT id, username, email, password_hash, created_at, updated_at FROM users WHERE email = $1",
+        r#"
+        SELECT 
+            id, 
+            username, 
+            email, 
+            password_hash, 
+            EXTRACT(EPOCH FROM created_at) as "created_at!: i64",
+            EXTRACT(EPOCH FROM updated_at) as "updated_at!: i64"
+        FROM users WHERE email = $1
+        "#,
         email
     )
     .fetch_optional(pool)
@@ -45,7 +60,16 @@ pub async fn find_user_by_id(
 ) -> Result<Option<User>, sqlx::Error> {
     let user = sqlx::query_as!(
         User,
-        "SELECT id, username, email, password_hash, created_at, updated_at FROM users WHERE id = $1",
+        r#"
+        SELECT 
+            id, 
+            username, 
+            email, 
+            password_hash, 
+            EXTRACT(EPOCH FROM created_at) as "created_at!: i64",
+            EXTRACT(EPOCH FROM updated_at) as "updated_at!: i64"
+        FROM users WHERE id = $1
+        "#,
         user_id
     )
     .fetch_optional(pool)
@@ -53,4 +77,3 @@ pub async fn find_user_by_id(
 
     Ok(user)
 }
-

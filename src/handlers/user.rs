@@ -1,7 +1,7 @@
 use crate::dtos::common::{ApiResponse, ApiResponseUserProfileEnvelope};
 use crate::middleware::auth::AuthenticatedUser;
 use crate::models::user::UserProfile;
-use crate::repositories::user::find_user_by_id;
+use crate::services::user::service_get_profile;
 use axum::http::StatusCode;
 use axum::{Extension, Json};
 use serde_json::Value;
@@ -13,7 +13,7 @@ use sqlx::{Pool, Postgres};
     tag = "user",
     security(("bearerAuth" = [])),
     responses(
-        (status = 200, description = "User profile", body = UserProfile),
+        (status = 200, description = "User profile", body = ApiResponseUserProfileEnvelope),
         (status = 404, description = "User not found"),
         (status = 401, description = "Unauthorized")
     )
@@ -22,10 +22,9 @@ pub async fn get_profile(
     AuthenticatedUser(user_id): AuthenticatedUser,
     Extension(pool): Extension<Pool<Postgres>>,
 ) -> Result<Json<Value>, StatusCode> {
-    let user = find_user_by_id(&pool, user_id)
+    let user = service_get_profile(&pool, user_id)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
-        .ok_or(StatusCode::NOT_FOUND)?;
+        .map_err(|_| StatusCode::NOT_FOUND)?;
 
     Ok(Json(ApiResponse::success_ok(serde_json::json!(
         UserProfile {

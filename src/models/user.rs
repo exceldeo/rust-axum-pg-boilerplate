@@ -12,10 +12,10 @@ pub struct User {
     pub email: String,
     #[serde(skip_serializing)]
     pub password_hash: String,
-    #[schema(example = "2023-10-01T12:00:00Z")]
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    #[schema(example = "2023-10-01T12:00:00Z")]
-    pub updated_at: chrono::DateTime<chrono::Utc>,
+    #[schema(example = 1696166400)] // Example Unix timestamp
+    pub created_at: i64,
+    #[schema(example = 1696166400)] // Example Unix timestamp
+    pub updated_at: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, ToSchema)]
@@ -36,8 +36,8 @@ pub struct UserProfile {
     pub username: String,
     #[schema(example = "alice@example.com")]
     pub email: String,
-    #[schema(example = "2023-10-01T12:00:00Z")]
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    #[schema(example = "2023-10-01T12:00:00Z")]
-    pub updated_at: chrono::DateTime<chrono::Utc>,
+    #[schema(example = 1696166400)] // Example Unix timestamp
+    pub created_at: i64,
+    #[schema(example = 1696166400)] // Example Unix timestamp
+    pub updated_at: i64,
 }
