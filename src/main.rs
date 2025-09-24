@@ -1,22 +1,22 @@
-use axum::{
-    Router, Extension, routing::get,
-};
-use std::net::SocketAddr;
+use axum::{routing::get, Extension, Router};
 use dotenvy::dotenv;
 use std::env;
-use tower_http::cors::{CorsLayer, Any};
+use std::net::SocketAddr;
 use tokio::net::TcpListener; // ADD THIS
+use tower_http::cors::{Any, CorsLayer};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 // Impor modul yang kita buat
 mod db;
+mod dtos;
 mod handlers;
-mod models;
-mod services;
 mod middleware;
-mod routes; // Menambahkan ini untuk modularisasi rute
+mod models;
 mod repositories;
+mod routes; // Menambahkan ini untuk modularisasi rute
+mod services;
+mod utils;
 #[derive(OpenApi)]
 #[openapi(
     paths(
@@ -33,7 +33,11 @@ mod repositories;
             crate::models::user::UserProfile,
             crate::models::token::TokenPair,
             crate::models::token::AuthClaims,
-            crate::handlers::auth::AuthPayload,
+            crate::dtos::auth::LoginRequest,
+            crate::dtos::auth::TokenResponse,
+            crate::dtos::common::ApiResponse,
+            crate::dtos::common::ApiResponseTokenEnvelope,
+            crate::dtos::common::ApiResponseEmptyEnvelope,
         )
     ),
     tags(
@@ -59,7 +63,10 @@ impl utoipa::Modify for SecurityAddon {
                 .build(),
         );
 
-        let mut components = openapi.components.clone().unwrap_or_else(|| ComponentsBuilder::new().build());
+        let mut components = openapi
+            .components
+            .clone()
+            .unwrap_or_else(|| ComponentsBuilder::new().build());
         components = ComponentsBuilder::from(components)
             .security_scheme("bearerAuth", bearer)
             .build();
@@ -71,7 +78,7 @@ impl utoipa::Modify for SecurityAddon {
 async fn main() {
     // Memuat variabel lingkungan dari file .env
     dotenv().ok();
-    
+
     // 1. Menyiapkan Pool Koneksi Database
     let db_pool = db::setup_db_pool()
         .await
@@ -90,16 +97,12 @@ async fn main() {
         // Menggabungkan rute-rute otentikasi dari `routes/auth.rs`
         .nest("/api/auth", routes::auth::auth_routes())
         .nest("/api/user", routes::user::user_routes())
-        
         // Swagger UI & OpenAPI JSON
         .merge(SwaggerUi::new("/docs").url("/api-doc/openapi.json", ApiDoc::openapi()))
-        
         // // Menambahkan rute lain yang memerlukan autentikasi
         // .route("/api/protected", get(handlers::user::protected_handler))
-
         // Menyisipkan pool database sebagai 'Extension' agar bisa diakses oleh handlers
         .layer(Extension(db_pool))
-        
         // Menerapkan middleware CORS ke seluruh aplikasi
         .layer(cors);
 
@@ -110,7 +113,7 @@ async fn main() {
         .expect("Invalid BIND_ADDRESS format");
 
     println!("🚀 Server listening on {}", addr);
-    
+
     // 5. Menjalankan Server Axum
     let listener = TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app.into_make_service())
